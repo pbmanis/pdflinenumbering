@@ -5,12 +5,12 @@ Scripts to put line numbers on a PDF file
  
  The code was modified in several ways:
  
- # \pgfplotsset{compat=1.14}
+ 1. \pgfplotsset{compat=1.14}
  
- # A for loop was introduced (you need to change the loop indices to match
+ 1. A for loop was introduced (you need to change the loop indices to match
  the pages in the work being decorated).
  
- # The decoration for the line numbers was moved out and font size increased.
+ 1. The decoration for the line numbers was moved out and font size increased.
  
  Usage
  -----
