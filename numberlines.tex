@@ -1,0 +1,72 @@
+%
+% This code came from
+% https://tex.stackexchange.com/questions/18760/add-page-and-line-numbers-to-a-pdf
+% on 16 Jan 2018.
+% First run the findlines.sh script on the pdf file. 
+% then run this one as 'pdflatex numberlines.tex'
+% the output will be in numberlines.pdf
+%
+
+\documentclass{article}
+\usepackage{tikz}
+\usepackage{pgfplotstable}
+\usepackage{pgffor}
+
+\pgfplotsset{compat=1.14}
+
+\newif\ifprintrawlinenumbers
+\pgfkeys{print raw line numbers/.is if=printrawlinenumbers,
+  print raw line numbers=true}
+\newcommand{\addlinenumbers}[5]{
+  \pgfmathtruncatemacro{\leftnumber}{(#1-1)*2}
+  \pgfmathtruncatemacro{\rightnumber}{(#1-1)*2+1}
+  \pgfplotstableread{\pdfname-\leftnumber.txt}\leftlines
+  \pgfplotstableread{\pdfname-\rightnumber.txt}\rightlines
+  \begin{tikzpicture}[font=\tiny,anchor=east]
+  \node[anchor=south west,inner sep=0] (image) at (0,0) {\includegraphics[width=16cm,page=#1]{\pdfname.pdf}};
+    \begin{scope}[x={(image.south east)},y={(image.north west)}]
+      \pgfplotstableforeachcolumnelement{[index] 0}\of\leftlines\as\position{
+        \ifprintrawlinenumbers
+          \node [font=\tiny,red] at (0.08,1-\position/1000)         {\pgfplotstablerow};
+        \fi
+        \pgfmathtruncatemacro{\checkexcluded}{
+          (\pgfplotstablerow>=#2 && \pgfplotstablerow<=#3) ? 1 : 0)
+        }
+        \ifnum\checkexcluded=1
+          \pgfmathtruncatemacro\linenumber{\pgfplotstablerow-#2+1}
+          \node [font=\scriptsize,align=right,anchor=east] at (-0.01,1-\position/1000) {\linenumber};
+        \fi
+      }
+      \pgfplotstablegetrowsof{\leftlines}
+      \pgfmathtruncatemacro\rightstart{min((\pgfplotsretval-#2),(#3-#2+1))}
+      \pgfplotstableforeachcolumnelement{[index] 0}\of\rightlines\as\position{
+        \ifprintrawlinenumbers
+          \node [font=\tiny,red,anchor=east] at (1.1,1-\position/1000) {\pgfplotstablerow};
+        \fi
+        \pgfmathtruncatemacro{\checkexcluded}{
+                  (\pgfplotstablerow>=#4 && \pgfplotstablerow<=#5) ? 1 : 0)
+        }
+        \ifnum\checkexcluded=1
+          \pgfmathtruncatemacro\linenumber{\pgfplotstablerow-#4+\rightstart+1}
+          \node [font=\tiny] at (0.96,1-\position/1000) {\linenumber};
+        \fi
+      }
+    \end{scope}
+  \end{tikzpicture}
+}
+
+\begin{document}
+
+\def\pdfname{filename}
+%\addlinenumbers{1}{20}{50}{2}{65}
+\pgfkeys{print raw line numbers=false}
+\foreach \n in {1,...,39}{
+    \addlinenumbers{\n}{0}{70}{0}{0}
+    }
+% for reference: original code that generates only 3 pages (2 col mode)
+% \addlinenumbers{1}{20}{50}{2}{65}
+% \pgfkeys{print raw line numbers=false}
+% \addlinenumbers{2}{0}{69}{0}{64}
+% \addlinenumbers{3}{19}{47}{21}{48}
+
+\end{document}
